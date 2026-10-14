@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
-    <title>Grand Theft Auto: Vice City</title>
+    <title>Hiv</title>
     <style>
         html {
             background-color: #100a36;
@@ -543,7 +543,392 @@
             border-radius: 0.3em;
             margin-left: 0.5em;
         }
-    </style>
+
+
+        /* Bug Hunt launcher: cover above Play, aligned left. */
+        html,
+        body {
+            min-height: 100%;
+            margin: 0;
+            background: #0b1020 !important;
+            background-image: none !important;
+            color: #ffffff;
+        }
+
+        .start-container {
+            position: relative;
+            min-height: 100vh;
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            padding: 48px 0 40px 4%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+        }
+
+        .start-container .button-container {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            gap: 20px;
+            width: min(560px, 42vw);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Keep the project's existing dist/cover.jpg artwork. */
+        .start-container .cover {
+            display: block !important;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 16 / 9;
+            box-sizing: border-box;
+            background-image: url("/cover.jpg") !important;
+            background-size: contain !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+            background-color: #182238;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            box-shadow: none;
+        }
+
+        .start-container .click-to-play {
+            display: block !important;
+            position: static !important;
+            width: 100%;
+            margin: 0 !important;
+            padding: 0 !important;
+            text-align: center;
+        }
+
+        #click-to-play-button,
+        .click-to-play button {
+            display: inline-block !important;
+            position: static !important;
+            transform: none !important;
+            padding: 16px 32px;
+            border: 0;
+            border-radius: 10px;
+            background: #2563eb;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-size: 21px;
+            font-weight: 700;
+            text-transform: none;
+            text-shadow: none;
+            box-shadow: none;
+            cursor: pointer;
+        }
+
+        #click-to-play-button:hover,
+        .click-to-play button:hover {
+            background: #1d4ed8;
+        }
+
+        /* Hide extra launcher content without deleting game-required elements. */
+        .start-container #config-panel,
+        .start-container .jsdos-key,
+        .start-container .disclaimer,
+        .start-container #demo-off-disclaimer,
+        .start-container .developed-by,
+        .start-container .follow-container,
+        .start-container a,
+        .start-container p,
+        .start-container h1,
+        .start-container h2 {
+            display: none !important;
+        }
+
+        /* Windowed gameplay: keep the game on the left and leave room on the right.
+           Do not request fullscreen from CSS; the existing game JS handles startup. */
+        #canvas {
+            position: fixed;
+            left: 4%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: min(64vw, 960px);
+            height: auto;
+            max-width: 64vw;
+            max-height: 90vh;
+            object-fit: contain;
+            background: #000;
+        }
+
+        /* The fullscreen option must remain off by default. */
+        #config-fullscreen {
+            accent-color: #2563eb;
+        }
+
+        @media (max-width: 700px) {
+            .start-container {
+                padding: 32px 5% 24px;
+            }
+
+            .start-container .button-container {
+                width: 100%;
+            }
+
+            #canvas {
+                left: 2%;
+                width: 96vw;
+                max-width: 96vw;
+                max-height: 90vh;
+            }
+        }
+
+    
+/* Bug Hunt: side-by-side game and coding panel */
+#bug-hunt-layout {
+    display: none;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 12px;
+    gap: 14px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    color: #e5e7eb;
+}
+body.gameIsStarted #bug-hunt-layout { display: grid !important; }
+#bug-hunt-game-pane {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    background: #05070d;
+    border: 1px solid #293244;
+    border-radius: 12px;
+}
+#bug-hunt-game-pane #canvas {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin: 0 auto;
+}
+#bug-hunt-ide {
+    box-sizing: border-box;
+    min-width: 0;
+    height: calc(100vh - 24px);
+    min-height: 560px;
+    position: sticky;
+    top: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #111827;
+    border: 1px solid #303b50;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0,0,0,.25);
+    font-family: system-ui, sans-serif;
+}
+#bug-hunt-ide * { box-sizing: border-box; }
+#bug-hunt-ide .bh-header {
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid #303b50;
+}
+#bug-hunt-ide h2 { margin: 0 0 6px; font-size: 19px; }
+#bug-hunt-ide .bh-subtitle { color: #9ca3af; font-size: 12px; }
+#bug-hunt-ide .bh-challenge {
+    margin: 12px 16px 8px;
+    padding: 11px;
+    background: #1d293b;
+    border: 1px solid #37465e;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+#bug-hunt-ide .bh-label {
+    display: block;
+    margin: 8px 16px;
+    color: #aab7cb;
+    font-size: 12px;
+}
+#bug-hunt-ide #bh-source {
+    width: calc(100% - 32px);
+    min-height: 260px;
+    flex: 1;
+    margin: 0 16px;
+    padding: 12px;
+    resize: none;
+    border: 1px solid #37465e;
+    border-radius: 8px;
+    outline: none;
+    color: #f9fafb;
+    background: #0b1020;
+    font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
+    tab-size: 4;
+}
+#bug-hunt-ide .CodeMirror {
+    width: calc(100% - 32px);
+    flex: 1;
+    min-height: 260px;
+    margin: 0 16px;
+    border: 1px solid #37465e;
+    border-radius: 8px;
+    font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+#bug-hunt-ide .bh-actions {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px 8px;
+}
+#bug-hunt-ide button {
+    padding: 9px 12px;
+    border: 1px solid #52627b;
+    border-radius: 7px;
+    color: #f9fafb;
+    background: #273449;
+    font-weight: 600;
+    cursor: pointer;
+}
+#bug-hunt-ide button:hover { filter: brightness(1.15); }
+#bug-hunt-ide #bh-submit-fix {
+    background: #2563eb;
+    border-color: #3b82f6;
+}
+#bug-hunt-ide .bh-footer {
+    padding: 4px 16px 14px;
+    color: #cbd5e1;
+    font-size: 12px;
+    line-height: 1.5;
+}
+#bug-hunt-ide #bh-status { min-height: 36px; margin-bottom: 6px; }
+#bug-hunt-ide #bh-points { color: #fbbf24; font-weight: 700; }
+@media (max-width: 900px) {
+    #bug-hunt-layout { grid-template-columns: minmax(0, 1fr); }
+    #bug-hunt-ide { position: static; height: 650px; min-height: 550px; }
+}
+
+    
+/* BUGHUNT-CANVAS-CONSTRAINT: keep game inside the left half */
+#bug-hunt-layout {
+    display: none;
+    width: 100%;
+    max-width: none;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px;
+    box-sizing: border-box;
+    align-items: stretch;
+}
+
+body.gameIsStarted #bug-hunt-layout {
+    display: grid !important;
+}
+
+#bug-hunt-game-pane {
+    position: relative !important;
+    width: 100%;
+    min-width: 0;
+    height: calc(100vh - 24px);
+    min-height: 400px;
+    overflow: hidden !important;
+    contain: layout paint;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#bug-hunt-game-pane #canvas {
+    position: relative !important;
+    inset: auto !important;
+    transform: none !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: calc(100vh - 48px) !important;
+    flex: 0 1 auto;
+    margin: 0 !important;
+    object-fit: contain;
+}
+
+#bug-hunt-ide {
+    position: sticky;
+    top: 12px;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: calc(100vh - 24px);
+    min-height: 400px;
+}
+
+@media (max-width: 900px) {
+    #bug-hunt-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    #bug-hunt-game-pane {
+        height: 55vh;
+        min-height: 300px;
+    }
+
+    #bug-hunt-ide {
+        position: static;
+        height: 650px;
+    }
+}
+
+
+/* BH-INPLACE-PROBLEM-SWITCHER-REPAIR-V3 */
+#bug-hunt-ide .bh-problem-panel-v3 {
+    margin: 10px 0 14px;
+    padding: 12px;
+    background: #172235;
+    border: 1px solid #37465e;
+    border-radius: 8px;
+    color: #e5e7eb;
+    text-align: left;
+}
+#bug-hunt-ide .bh-problem-panel-v3 label {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 13px;
+    font-weight: 700;
+}
+#bug-hunt-ide #bh-problem-select-v3 {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 10px;
+    background: #111827;
+    color: #f9fafb;
+    border: 1px solid #4b5563;
+    border-radius: 6px;
+    font-size: 14px;
+}
+#bug-hunt-ide #bh-problem-title-v3 {
+    margin: 12px 0 5px;
+    color: #a5b4fc;
+    font-size: 15px;
+}
+#bug-hunt-ide #bh-problem-description-v3 {
+    margin: 0;
+    color: #d1d5db;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+
+/* HIDE COVER ART, KEEP START SCREEN LAYOUT */
+.start-container .button-container > .cover {
+    display: block !important;
+    visibility: visible !important;
+    background-image: none !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
 </head>
 
 <body
@@ -603,7 +988,7 @@
                 </div>
                 <div class="config-option">
                     <label for="config-fullscreen">
-                        <input type="checkbox" id="config-fullscreen" checked>
+                        <input type="checkbox" id="config-fullscreen">
                         <span id="config-fullscreen-label">Fullscreen</span>
                     </label>
                 </div>
@@ -670,6 +1055,9 @@
     <input type="file" id="original-game-file" hidden>
 
 
+    <div id="bug-hunt-layout">
+    <section id="bug-hunt-game-pane" aria-label="Vice City game">
+
     <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
 
     <div class="touch-controls-wrapper">
@@ -694,6 +1082,48 @@
         <div class="touch-control fireRight"></div>
         <div class="touch-control fireLeft"></div>
     </div>
+
+
+    </section>
+    <aside id="bug-hunt-ide" aria-label="Bug Hunt code editor">
+        <div class="bh-header">
+            <h2>BUG HUNT IDE</h2>
+            <div class="bh-subtitle">Find the fault. Fix the code. Earn points.</div>
+        </div>
+        <div class="bh-challenge">
+            <strong>Challenge 01 — Car Entry</strong><br>
+            The player cannot enter a vehicle. Repair the function so pressing
+            <strong>F</strong> or <strong>Enter</strong> is not blocked.
+            Run the tests, then submit your fix.
+            <div id="bh-challenge-status">Waiting for your fix.</div>
+        </div>
+        <div id="bh-problem-panel-v3" class="bh-problem-panel-v3">
+  <label for="bh-problem-select-v3">Choose a problem</label>
+  <select id="bh-problem-select-v3">
+    <option value="inverted-steering">Problem 1 — Inverted Steering</option>
+    <option value="car-entry-disabled">Problem 2 — Vehicle Entry Disabled</option>
+  
+            <option value="sprint-disabled">Problem 3 — Sprint Disabled</option>
+            <option value="accel-brake-swapped">Problem 4 — Acceleration and Braking Swapped</option></select>
+  <h3 id="bh-problem-title-v3">Problem 2 — Vehicle Entry Disabled</h3>
+  <p id="bh-problem-description-v3">The vehicle interaction handler blocks F and Enter. Fix the function so those keys are not blocked.</p>
+</div>
+
+        <label class="bh-label" for="bh-source">JavaScript · edit the function below</label>
+        <textarea id="bh-source" spellcheck="false" autocapitalize="off" autocomplete="off">function shouldBlockVehicleEntry(key) {
+    const normalizedKey = String(key).toLowerCase();
+    return normalizedKey === "f" || normalizedKey === "enter"; // BUG
+}</textarea>
+        <div class="bh-actions">
+            <button type="button" id="bh-run-tests">Run Tests</button>
+            <button type="button" id="bh-submit-fix">Submit Fix</button>
+        </div>
+        <div class="bh-footer">
+            <div id="bh-status" role="status">Edit the code and run the tests.</div>
+            <div>Local points: <span id="bh-points">0</span></div>
+        </div>
+    </aside>
+</div>
 
     <script type='text/javascript' src="GamepadEmulator.js"></script>
     <script>
@@ -731,6 +1161,408 @@
     // 2. كإجراء احتياطي: تفعيل التحكمات بمجرد لمس الشاشة لأول مرة
     window.addEventListener('touchstart', forceEnableTouchControls, { once: true });
     </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script>
+(function () {
+    const params = new URLSearchParams(window.location.search);
+    const bugList = (params.get("bug") || "").split(",").map(x => x.trim());
+    const challengeActive = bugList.includes("car-entry-disabled");
+    const textarea = document.getElementById("bh-source");
+    const status = document.getElementById("bh-status");
+    const challengeStatus = document.getElementById("bh-challenge-status");
+    const pointsLabel = document.getElementById("bh-points");
+    const runner = document.createElement("iframe");
+
+    runner.setAttribute("sandbox", "allow-scripts");
+    runner.title = "Isolated code test runner";
+    runner.style.display = "none";
+    runner.srcdoc = "<!doctype html><meta charset=\"utf-8\"><script>\nwindow.addEventListener(\"message\", function(e) {\n    var m = e.data;\n    if (!m || m.type !== \"bh-run\") return;\n    try {\n        var suffix, values, pass;\n        if (m.problem === \"inverted-steering\") {\n            suffix = \"\\n; return [getSteeringDirection(\\\"left\\\"), getSteeringDirection(\\\"right\\\"), getSteeringDirection(\\\"other\\\")];\";\n        } else if (m.problem === \"car-entry-disabled\") {\n            suffix = \"\\n; return [shouldBlockVehicleEntry(\\\"f\\\"), shouldBlockVehicleEntry(\\\"enter\\\"), shouldBlockVehicleEntry(\\\"w\\\")];\";\n        } else if (m.problem === \"sprint-disabled\") {\n            suffix = \"\\n; return [getSprintAction(\\\"ShiftLeft\\\"), getSprintAction(\\\"ShiftRight\\\"), getSprintAction(\\\"w\\\")];\";\n        } else if (m.problem === \"accel-brake-swapped\") {\n            suffix = \"\\n; return [getVehicleAction(\\\"accelerate\\\"), getVehicleAction(\\\"brake\\\"), getVehicleAction(\\\"horn\\\")];\";\n        } else {\n            throw new Error(\"Unknown challenge ID: \" + m.problem);\n        }\n        values = new Function(m.source + suffix)();\n        if (m.problem === \"inverted-steering\") {\n            pass = Array.isArray(values) && values[0] === \"left\" && values[1] === \"right\" && values[2] === \"other\";\n        } else if (m.problem === \"car-entry-disabled\") {\n            pass = Array.isArray(values) && values[0] === false && values[1] === false && values[2] === false;\n        } else if (m.problem === \"sprint-disabled\") {\n            pass = Array.isArray(values) && values[0] === \"sprint\" && values[1] === \"sprint\" && values[2] === \"other\";\n        } else {\n            pass = Array.isArray(values) && values[0] === \"accelerate\" && values[1] === \"brake\" && values[2] === \"horn\";\n        }\n        parent.postMessage({type:\"bh-result\", problem:m.problem, requestId:m.requestId, pass:pass, values:values}, \"*\");\n    } catch (err) {\n        parent.postMessage({type:\"bh-result\", problem:m.problem, requestId:m.requestId, error:String(err)}, \"*\");\n    }\n});\n<\/script>";
+    document.body.appendChild(runner);
+
+    let editor = null;
+    if (window.CodeMirror) {
+        editor = CodeMirror.fromTextArea(textarea, {
+            mode: "javascript",
+            theme: "dracula",
+            lineNumbers: true,
+            indentUnit: 4,
+            tabSize: 4,
+            matchBrackets: true,
+            lineWrapping: true
+        });
+    }
+
+    function sourceCode() {
+        return editor ? editor.getValue() : textarea.value;
+    }
+
+    // BH-INPLACE-PROBLEM-SWITCHER-REPAIR-V3
+    const problemSelectV3 = document.getElementById("bh-problem-select-v3");
+    const problemTitleV3 = document.getElementById("bh-problem-title-v3");
+    const problemDescriptionV3 = document.getElementById("bh-problem-description-v3");
+    const problemDefinitionsV3 = {
+        "inverted-steering": {
+            title: "Problem 1 — Inverted Steering",
+            description: "Left and right steering are reversed. Correct the direction mapping so left stays left and right stays right.",
+            starter: `function getSteeringDirection(direction) {
+    const normalizedDirection = String(direction).toLowerCase();
+    if (normalizedDirection === "left") return "right"; // BUG
+    if (normalizedDirection === "right") return "left"; // BUG
+    return normalizedDirection;
+}`
+        },
+        "car-entry-disabled": {
+            title: "Problem 2 — Vehicle Entry Disabled",
+            description: "The vehicle interaction handler blocks F and Enter. Fix the function so neither key is blocked.",
+            starter: `function shouldBlockVehicleEntry(key) {
+    const normalizedKey = String(key).toLowerCase();
+    return normalizedKey === "f" || normalizedKey === "enter"; // BUG
+}`
+        },
+        "sprint-disabled": {
+            title: "Problem 3 — Sprint Disabled",
+            description: "Your character can walk normally, but sprinting does not work. Fix the sprint-action mapping so the configured Shift keys trigger sprint.",
+            points: 100,
+            starter: `function getSprintAction(key) {
+    const normalizedKey = String(key).toLowerCase();
+    if (normalizedKey === "shiftleft" || normalizedKey === "shiftright") return "disabled"; // BUG
+    return "other";
+}`
+        },
+        "accel-brake-swapped": {
+            title: "Problem 4 — Acceleration and Braking Swapped",
+            description: "In vehicles, acceleration and braking trigger the opposite actions. Correct the action mapping so acceleration stays acceleration and braking stays braking.",
+            points: 150,
+            starter: `function getVehicleAction(action) {
+    const normalizedAction = String(action).toLowerCase();
+    if (normalizedAction === "accelerate") return "brake"; // BUG
+    if (normalizedAction === "brake") return "accelerate"; // BUG
+    return normalizedAction;
+}`
+        }
+    };
+const startupBugsV3 = (new URLSearchParams(window.location.search).get("bug") || "")
+        .split(",").map(value => value.trim());
+    const requestedNextProblemV3 = sessionStorage.getItem("bughunt.next-problem-v3");
+    sessionStorage.removeItem("bughunt.next-problem-v3");
+    let selectedProblemV3 = requestedNextProblemV3 &&
+        Object.prototype.hasOwnProperty.call(problemDefinitionsV3, requestedNextProblemV3)
+        ? requestedNextProblemV3
+        : (startupBugsV3.includes("inverted-steering") &&
+           !startupBugsV3.includes("car-entry-disabled") &&
+           !startupBugsV3.includes("sprint-disabled") &&
+           !startupBugsV3.includes("accel-brake-swapped")
+           ? "inverted-steering"
+           : (startupBugsV3.includes("sprint-disabled") &&
+              !startupBugsV3.includes("car-entry-disabled") &&
+              !startupBugsV3.includes("accel-brake-swapped")
+              ? "sprint-disabled"
+              : (startupBugsV3.includes("accel-brake-swapped") &&
+                 !startupBugsV3.includes("car-entry-disabled")
+                 ? "accel-brake-swapped" : "car-entry-disabled")));
+    const problemDraftsV3 = {
+        "car-entry-disabled": sourceCode()
+    };
+    let problemRunIdV3 = 0;
+    let activeRunIdV3 = 0;
+    let activeRunProblemV3 = selectedProblemV3;
+    let pendingSubmission = false;
+    let pendingSubmissionProblemV3 = null;
+
+    function saveProblemDraftV3() {
+        problemDraftsV3[selectedProblemV3] = sourceCode();
+        try {
+            localStorage.setItem("bughunt.draft." + selectedProblemV3, sourceCode());
+        } catch (_) {}
+    }
+
+    function updateOldChallengeLabelsV3(info) {
+        const root = document.getElementById("bug-hunt-ide");
+        if (!root) return;
+        for (const el of root.querySelectorAll("h1,h2,h3,h4,p,span,strong")) {
+            if (el.closest("#bh-problem-panel-v3")) continue;
+            if (el.children.length !== 0) continue;
+            const text = (el.textContent || "").trim();
+            if (/^Challenge\s*0?1\s*[—:-].*Car Entry/i.test(text)) {
+                el.textContent = info.title;
+            } else if (/^(The car-entry challenge is not active in this URL\.|Waiting for your fix\.)$/i.test(text)) {
+                el.textContent = info.description;
+            }
+        }
+    }
+
+    function selectProblemV3(id, initial) {
+        if (!problemDefinitionsV3[id]) return;
+        if (!initial) saveProblemDraftV3();
+        selectedProblemV3 = id;
+        const info = problemDefinitionsV3[id];
+        problemTitleV3.textContent = info.title;
+        problemDescriptionV3.textContent = info.description;
+        problemSelectV3.value = id;
+
+        let draft = problemDraftsV3[id];
+        if (draft === undefined) {
+            try { draft = localStorage.getItem("bughunt.draft." + id); } catch (_) {}
+        }
+        if (draft === null || draft === undefined) draft = info.starter;
+        problemDraftsV3[id] = draft;
+        if (editor) {
+            editor.setValue(draft);
+            editor.refresh();
+        } else {
+            textarea.value = draft;
+        }
+        pendingSubmission = false;
+        pendingSubmissionProblemV3 = null;
+        activeRunProblemV3 = id;
+        activeRunIdV3 = 0;
+        updateOldChallengeLabelsV3(info);
+        challengeStatus.textContent = info.title;
+        status.textContent = "Selected " + info.title + ". Edit the code and run its tests.";
+    }
+
+    if (editor) editor.on("change", saveProblemDraftV3);
+    else textarea.addEventListener("input", saveProblemDraftV3);
+
+    problemSelectV3.addEventListener("change", function () {
+        // Change the IDE exercise only. Do not reload or navigate the game.
+        selectProblemV3(problemSelectV3.value, false);
+    });
+
+    selectProblemV3(selectedProblemV3, true);
+    const steeringFixMessageV3 = sessionStorage.getItem("bughunt.steering-fix-message-v3");
+    if (steeringFixMessageV3) {
+        challengeStatus.textContent = steeringFixMessageV3;
+        status.textContent = steeringFixMessageV3;
+        sessionStorage.removeItem("bughunt.steering-fix-message-v3");
+    }
+
+    let points = parseInt(localStorage.getItem("bughunt.points") || "0", 10);
+    if (!Number.isFinite(points)) points = 0;
+    pointsLabel.textContent = String(points);
+    // IDE exercises can be tested independently of startup URL bug flags.
+
+
+    // pendingSubmission was initialized above.
+    function runTests(submit) {
+        // The selected IDE exercise can run without changing the game's startup URL.
+
+        pendingSubmission = Boolean(submit);
+        status.textContent = "Running tests for " + problemDefinitionsV3[selectedProblemV3].title + "...";
+        activeRunIdV3 = ++problemRunIdV3;
+        activeRunProblemV3 = selectedProblemV3;
+        pendingSubmissionProblemV3 = submit ? selectedProblemV3 : null;
+        runner.contentWindow.postMessage({type: "bh-run", problem: selectedProblemV3, source: sourceCode(), requestId: activeRunIdV3}, "*");
+    }
+
+    document.getElementById("bh-run-tests").addEventListener("click", () => runTests(false));
+    document.getElementById("bh-submit-fix").addEventListener("click", () => runTests(true));
+
+    
+    window.addEventListener("message", function (event) {
+        const result = event.data;
+        if (!result || result.type !== "bh-result") return;
+        if (result.requestId !== activeRunIdV3 ||
+            result.problem !== selectedProblemV3 ||
+            result.problem !== activeRunProblemV3) {
+            event.stopImmediatePropagation();
+        }
+    }, true);
+
+    window.addEventListener("message", function (event) {
+        if (event.source !== runner.contentWindow || !event.data || event.data.type !== "bh-result") return;
+        const result = event.data;
+
+        if (result.problem === "sprint-disabled" || result.problem === "accel-brake-swapped") {
+            if (result.error) {
+                status.textContent = "Test error: " + result.error;
+                pendingSubmission = false;
+                return;
+            }
+            if (!result.pass) {
+                status.textContent = "Tests failed for " + problemDefinitionsV3[result.problem].title + ".";
+                pendingSubmission = false;
+                return;
+            }
+            if (!pendingSubmission || pendingSubmissionProblemV3 !== result.problem) {
+                status.textContent = "Tests passed! Click Submit Fix to apply this solution.";
+                return;
+            }
+
+            const fixedProblemV3 = result.problem;
+            const fixFlagV3 = fixedProblemV3 === "sprint-disabled"
+                ? "bughunt.sprint-disabled.fixed"
+                : "bughunt.accel-brake-swapped.fixed";
+            const awardKeyV3 = "bughunt." + fixedProblemV3 + ".awarded";
+            sessionStorage.setItem(fixFlagV3, "1");
+            sessionStorage.setItem("bughunt.next-problem-v3", fixedProblemV3);
+            challengeStatus.textContent = problemDefinitionsV3[fixedProblemV3].title + " accepted. Restarting once to apply the corrected game controls.";
+            status.textContent = "Fix accepted. Vice City will restart once to apply the corrected control mapping.";
+            pendingSubmission = false;
+
+            if (localStorage.getItem(awardKeyV3) !== "1") {
+                points += problemDefinitionsV3[fixedProblemV3].points;
+                localStorage.setItem("bughunt.points", String(points));
+                localStorage.setItem(awardKeyV3, "1");
+            }
+            pointsLabel.textContent = String(points);
+            setTimeout(function () { window.location.reload(); }, 800);
+            return;
+        }
+        if (result.error) {
+            status.textContent = "Test error: " + result.error;
+            pendingSubmission = false;
+            return;
+        }
+
+        if (!result.pass) {
+            status.textContent = "Tests failed for " + problemDefinitionsV3[selectedProblemV3].title + ". Check the expected results and try again.";
+            pendingSubmission = false;
+            return;
+        }
+
+        if (!pendingSubmission) {
+            status.textContent = "Tests passed! Click Submit Fix to apply your solution in the game.";
+            return;
+        }
+
+        const acceptedProblem = pendingSubmissionProblemV3 || selectedProblemV3;
+
+        if (acceptedProblem === "sprint-disabled" || acceptedProblem === "accel-brake-swapped") {
+            if (!startupBugsV3.includes(acceptedProblem)) {
+                status.textContent = "Tests passed, but this bug is not active in the running game. Launch with both new bug IDs enabled before submitting a runtime fix.";
+                pendingSubmission = false;
+                pendingSubmissionProblemV3 = null;
+                return;
+            }
+
+            const fixedFlag = acceptedProblem === "sprint-disabled"
+                ? "bughunt.sprint-disabled.fixed"
+                : "bughunt.accel-brake-swapped.fixed";
+            const runtimeAwardKey = acceptedProblem === "sprint-disabled"
+                ? "bughunt.sprint-disabled.awarded"
+                : "bughunt.accel-brake-swapped.awarded";
+            const runtimePoints = acceptedProblem === "sprint-disabled" ? 100 : 150;
+
+            sessionStorage.setItem(fixedFlag, "1");
+            challengeStatus.textContent = problemDefinitionsV3[acceptedProblem].title + " accepted. Restarting once to apply the corrected game controls.";
+            status.textContent = "Fix accepted. Reloading Vice City once to apply the corrected control mapping...";
+            pendingSubmission = false;
+            pendingSubmissionProblemV3 = null;
+
+            if (localStorage.getItem(runtimeAwardKey) !== "1") {
+                points += runtimePoints;
+                localStorage.setItem("bughunt.points", String(points));
+                localStorage.setItem(runtimeAwardKey, "1");
+            }
+            pointsLabel.textContent = String(points);
+            sessionStorage.setItem("bughunt.next-problem-v3", acceptedProblem);
+            window.setTimeout(function () { window.location.reload(); }, 700);
+            return;
+        }
+
+        const awardKey = acceptedProblem === "inverted-steering"
+            ? "bughunt.inverted-steering.awarded"
+            : "bughunt.car-entry.awarded";
+        if (acceptedProblem === "car-entry-disabled") {
+            window.__BUGHUNT_CAR_ENTRY_FIXED = true;
+            challengeStatus.textContent = "Problem 2 tests passed — vehicle entry is unblocked for this session.";
+            status.textContent = "Fix accepted for Problem 2 — Vehicle Entry Disabled.";
+        } else {
+            sessionStorage.setItem("bughunt.inverted-steering.fixed", "1");
+            sessionStorage.setItem("bughunt.next-problem-v3", "car-entry-disabled");
+            sessionStorage.setItem("bughunt.steering-fix-message-v3", "Problem 1 fixed: normal left/right steering has been restored in Vice City.");
+            challengeStatus.textContent = "Problem 1 accepted — applying the corrected steering mapping.";
+            status.textContent = "Fix accepted. Vice City will restart once to apply the corrected steering controls.";
+        }
+        pendingSubmission = false;
+        pendingSubmissionProblemV3 = null;
+        if (localStorage.getItem(awardKey) !== "1") {
+            points += 100;
+            localStorage.setItem("bughunt.points", String(points));
+            localStorage.setItem(awardKey, "1");
+        }
+        pointsLabel.textContent = String(points);
+        if (acceptedProblem === "inverted-steering") {
+            window.setTimeout(function () { window.location.reload(); }, 1100);
+        }
+    });
+
+    const observer = new MutationObserver(function () {
+        if (editor && document.body.classList.contains("gameIsStarted")) editor.refresh();
+    });
+    observer.observe(document.body, {attributes: true, attributeFilter: ["class"]});
+
+    // BUGHUNT-ESC-TOGGLE-FIX
+    let bhCodingMode = false;
+    window.__BUGHUNT_CODING_MODE = false;
+
+    function setBhCodingMode(enabled) {
+        bhCodingMode = enabled;
+        window.__BUGHUNT_CODING_MODE = enabled;
+
+        if (editor) {
+            editor.setOption("readOnly", false);
+            editor.refresh();
+            if (enabled) {
+                editor.focus();
+            } else {
+                editor.getInputField().blur();
+                document.getElementById("canvas")?.focus();
+            }
+        } else if (textarea) {
+            if (enabled) textarea.focus();
+            else textarea.blur();
+        }
+
+        console.log(
+            "[Bug Hunt] Mode:",
+            enabled ? "CODING — keyboard belongs to editor"
+                    : "VICE CITY — keyboard belongs to game"
+        );
+    }
+
+    const bhIde = document.getElementById("bug-hunt-ide");
+    const bhEditorInput = editor
+        ? editor.getInputField()
+        : textarea;
+
+    // Editor input works normally but does not bubble into game handlers.
+    if (bhEditorInput) {
+        ["keydown", "keypress", "keyup", "beforeinput", "input",
+         "compositionstart", "compositionupdate", "compositionend"]
+        .forEach(type => {
+            bhEditorInput.addEventListener(type, event => {
+                if (bhCodingMode) event.stopPropagation();
+            });
+        });
+    }
+
+    window.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+            if (bhCodingMode) {
+                // Exit coding mode without unpausing the game.
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                setBhCodingMode(false);
+            } else {
+                // Let Vice City open its menu, then focus the editor.
+                setTimeout(() => setBhCodingMode(true), 300);
+            }
+            return;
+        }
+
+        // While coding, discard game-directed keyboard input.
+        if (bhCodingMode && bhIde && !bhIde.contains(event.target)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        }
+    }, true);
+
+})();</script>
+
 </body>
 
 </html>

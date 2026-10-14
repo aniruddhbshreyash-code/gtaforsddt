@@ -6,6 +6,7 @@ var data_content;
 var wasm_content;
 
 const params = new URLSearchParams(window.location.search);
+const activeBugs = (params.get('bug') || '').split(',').map(b => b.trim());
 
 // Base URLs
 const replaceFetch = (str) => str.replace("https://cdn.dos.zone/vcsky/", "/vcsky/")
@@ -15,7 +16,7 @@ const replaceBR = "/vcbr/"
 const configurableMode = params.get('configurable') === "1";
 
 // Settings that can be configured via URL or UI
-let autoFullScreen = params.get('fullscreen') !== "0";
+let autoFullScreen = false;
 let cheatsEnabled = params.get('cheats') === "1" || configurableMode;
 let maxFPS = parseInt(params.get('max_fps')) || 0;
 
@@ -249,6 +250,20 @@ async function startGame(e) {
         intro.pause();
         introContainer.style.display = 'none';
         loadGame(dataBuffer);
+
+        const gameCanvas = document.getElementById('canvas');
+        if (gameCanvas && typeof gameCanvas.requestPointerLock === 'function') {
+            try {
+                const lockResult = gameCanvas.requestPointerLock();
+                if (lockResult && typeof lockResult.catch === 'function') {
+                    lockResult.catch(error =>
+                        console.warn('Pointer lock request failed:', error)
+                    );
+                }
+            } catch (error) {
+                console.warn('Pointer lock request failed:', error);
+            }
+        }
     };
     if (isMobile) {
         window.addEventListener('pointerup', clickHandler, { once: true });
@@ -282,6 +297,27 @@ function setStatus(text) {
 };
 
 async function loadGame(data) {
+    // Bug-hunt challenge: block vehicle entry/exit keys in gameplay.
+    if (activeBugs.includes('car-entry-disabled')) {
+        const blockCarEntryKeydown = (event) => {
+            if (window.__BUGHUNT_CAR_ENTRY_FIXED || window.__BUGHUNT_CODING_MODE) return;
+            const key = (event.key || '').toLowerCase();
+
+            if (
+                event.code === 'KeyF' ||
+                key === 'f' ||
+                key === 'enter' ||
+                event.code === 'NumpadEnter'
+            ) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+            }
+        };
+
+        window.addEventListener('keydown', blockCarEntryKeydown, true);
+    }
+
     var Module = {
         mainCalled: () => {
             try {
@@ -295,7 +331,12 @@ async function loadGame(data) {
             try {
                 const path = Module.FS.lookupPath("/vc-assets/local/revc.ini");
                 if (path && path.node && path.node.contents) {
-                    localStorage.setItem('vcsky.revc.ini', textDecoder.decode(path.node.contents));
+                    if (!params.has('bug')) {
+                    /* BUGHUNT-NO-PERSIST-PROBLEMS-3-4 */
+                    if (!activeBugs.includes("sprint-disabled") && !activeBugs.includes("accel-brake-swapped")) {
+                        localStorage.setItem('vcsky.revc.ini', textDecoder.decode(path.node.contents));
+                    }
+                }
                 }
             } catch (e) {
                 console.error('syncRevcIni error:', e);
@@ -793,10 +834,130 @@ UNKNOWN_ACTION=
 
 const revc_ini = (() => {
     const cached = localStorage.getItem('vcsky.revc.ini');
-    if (cached) {
-        return cached;
+    let config = cached || revc_iniDefault;
+
+    if (activeBugs.includes('inverted-steering') && sessionStorage.getItem('bughunt.inverted-steering.fixed') !== '1') {
+        const leftBinding = config.match(/^GO_LEFT=.*$/m)?.[0];
+        const rightBinding = config.match(/^GO_RIGHT=.*$/m)?.[0];
+
+        if (leftBinding && rightBinding) {
+            const leftValue = leftBinding.slice('GO_LEFT='.length);
+            const rightValue = rightBinding.slice('GO_RIGHT='.length);
+            config = config.replace(leftBinding, `GO_LEFT=${rightValue}`);
+            config = config.replace(rightBinding, `GO_RIGHT=${leftValue}`);
+        }
     }
-    return revc_iniDefault;
+
+
+    // BUGHUNT-RESTORE-STEERING-BINDINGS
+    // If Problem 1 was solved but the loaded config is still reversed,
+    // swap only this known reversed pair back to normal.
+    if (
+        activeBugs.includes('inverted-steering') &&
+        sessionStorage.getItem('bughunt.inverted-steering.fixed') === '1'
+    ) {
+        const leftLine = config.match(/^GO_LEFT=.*$/m)?.[0];
+        const rightLine = config.match(/^GO_RIGHT=.*$/m)?.[0];
+
+        if (
+            leftLine === 'GO_LEFT=kbd:RIGHT,2ndKbd:D' &&
+            rightLine === 'GO_RIGHT=2ndKbd:A,kbd:LEFT'
+        ) {
+            config = config.replace(
+                leftLine,
+                'GO_LEFT=2ndKbd:A,kbd:LEFT'
+            );
+            config = config.replace(
+                rightLine,
+                'GO_RIGHT=kbd:RIGHT,2ndKbd:D'
+            );
+        }
+    }
+
+    // BUGHUNT-PROBLEMS-3-4-CONFIG
+    // Problem 3: clear the sprint binding to inject the bug; restore the default
+    // binding once its submitted fix flag is present.
+    const defaultSprintLineV3 = revc_iniDefault.match(/^PED_SPRINT=.*$/m)?.[0];
+    const sprintLineV3 = config.match(/^PED_SPRINT=.*$/m)?.[0];
+    if (activeBugs.includes("sprint-disabled")) {
+        if (sessionStorage.getItem("bughunt.sprint-disabled.fixed") === "1") {
+            if (sprintLineV3 === "PED_SPRINT=" && defaultSprintLineV3) {
+                config = config.replace(sprintLineV3, defaultSprintLineV3);
+            }
+        } else if (sprintLineV3 && sprintLineV3 !== "PED_SPRINT=") {
+            config = config.replace(sprintLineV3, "PED_SPRINT=");
+        }
+    }
+
+    // Problem 4: swap vehicle acceleration/brake bindings only when the current
+    // mapping matches the known default pair. Once solved, normalize that pair.
+    const defaultAccelLineV3 = revc_iniDefault.match(/^VEHICLE_ACCELERATE=.*$/m)?.[0];
+    const defaultBrakeLineV3 = revc_iniDefault.match(/^VEHICLE_BRAKE=.*$/m)?.[0];
+    const accelLineV3 = config.match(/^VEHICLE_ACCELERATE=.*$/m)?.[0];
+    const brakeLineV3 = config.match(/^VEHICLE_BRAKE=.*$/m)?.[0];
+    if (activeBugs.includes("accel-brake-swapped") && defaultAccelLineV3 && defaultBrakeLineV3 && accelLineV3 && brakeLineV3) {
+        const defaultAccelValueV3 = defaultAccelLineV3.slice("VEHICLE_ACCELERATE=".length);
+        const defaultBrakeValueV3 = defaultBrakeLineV3.slice("VEHICLE_BRAKE=".length);
+        const currentAccelValueV3 = accelLineV3.slice("VEHICLE_ACCELERATE=".length);
+        const currentBrakeValueV3 = brakeLineV3.slice("VEHICLE_BRAKE=".length);
+        if (sessionStorage.getItem("bughunt.accel-brake-swapped.fixed") === "1") {
+            if (currentAccelValueV3 === defaultBrakeValueV3 && currentBrakeValueV3 === defaultAccelValueV3) {
+                config = config.replace(accelLineV3, defaultAccelLineV3);
+                config = config.replace(brakeLineV3, defaultBrakeLineV3);
+            }
+        } else if (currentAccelValueV3 === defaultAccelValueV3 && currentBrakeValueV3 === defaultBrakeValueV3) {
+            config = config.replace(accelLineV3, "VEHICLE_ACCELERATE=" + defaultBrakeValueV3);
+            config = config.replace(brakeLineV3, "VEHICLE_BRAKE=" + defaultAccelValueV3);
+        }
+    }
+
+        // BUGHUNT-CONNECT-PROBLEMS-3-4-TO-GAME
+    // Problem 3: disable sprint only while the challenge is active and unsolved.
+    const sprintDefaultLine = revc_iniDefault.match(/^PED_SPRINT=.*$/m)?.[0];
+    const sprintCurrentLine = config.match(/^PED_SPRINT=.*$/m)?.[0];
+    const sprintIsFixed = sessionStorage.getItem("bughunt.sprint-disabled.fixed") === "1";
+
+    if (sprintIsFixed || !activeBugs.includes("sprint-disabled")) {
+        if (sprintCurrentLine === "PED_SPRINT=" && sprintDefaultLine) {
+            config = config.replace(/^PED_SPRINT=.*$/m, sprintDefaultLine);
+        }
+    } else if (sprintCurrentLine) {
+        config = config.replace(/^PED_SPRINT=.*$/m, "PED_SPRINT=");
+    }
+
+    // Problem 4: swap the actual vehicle accelerate/brake config bindings.
+    // Do not double-swap if an already swapped pair came from an earlier run.
+    const defaultAccelLine = revc_iniDefault.match(/^VEHICLE_ACCELERATE=.*$/m)?.[0];
+    const defaultBrakeLine = revc_iniDefault.match(/^VEHICLE_BRAKE=.*$/m)?.[0];
+    const accelCurrentLine = config.match(/^VEHICLE_ACCELERATE=.*$/m)?.[0];
+    const brakeCurrentLine = config.match(/^VEHICLE_BRAKE=.*$/m)?.[0];
+    const accelIsFixed = sessionStorage.getItem("bughunt.accel-brake-swapped.fixed") === "1";
+
+    if (defaultAccelLine && defaultBrakeLine && accelCurrentLine && brakeCurrentLine) {
+        const defaultAccelValue = defaultAccelLine.slice("VEHICLE_ACCELERATE=".length);
+        const defaultBrakeValue = defaultBrakeLine.slice("VEHICLE_BRAKE=".length);
+        const currentAccelValue = accelCurrentLine.slice("VEHICLE_ACCELERATE=".length);
+        const currentBrakeValue = brakeCurrentLine.slice("VEHICLE_BRAKE=".length);
+
+        if (accelIsFixed) {
+            // Normalize the known swapped default pair after successful submission.
+            if (currentAccelValue === defaultBrakeValue && currentBrakeValue === defaultAccelValue) {
+                config = config.replace(accelCurrentLine, defaultAccelLine);
+                config = config.replace(brakeCurrentLine, defaultBrakeLine);
+            }
+        } else if (activeBugs.includes("accel-brake-swapped")) {
+            if (currentAccelValue === defaultAccelValue && currentBrakeValue === defaultBrakeValue) {
+                config = config.replace(accelCurrentLine, "VEHICLE_ACCELERATE=" + defaultBrakeValue);
+                config = config.replace(brakeCurrentLine, "VEHICLE_BRAKE=" + defaultAccelValue);
+            } else if (!(currentAccelValue === defaultBrakeValue && currentBrakeValue === defaultAccelValue)) {
+                // For a custom binding pair, swap the current values once.
+                config = config.replace(accelCurrentLine, "VEHICLE_ACCELERATE=" + currentBrakeValue);
+                config = config.replace(brakeCurrentLine, "VEHICLE_BRAKE=" + currentAccelValue);
+            }
+        }
+    }
+
+return config;
 })();
 
 // Configurable mode UI
